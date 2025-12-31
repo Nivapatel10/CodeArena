@@ -1,8 +1,5 @@
 # 🎯 Code Arena — Battle. Learn. Build. 🛡️⚔️
 
-[![Repo Size](https://img.shields.io/github/repo-size/Nivapatel10/Code_Arena)](https://github.com/Nivapatel10/Code_Arena)
-[![Issues](https://img.shields.io/github/issues-raw/Nivapatel10/Code_Arena)](https://github.com/Nivapatel10/Code_Arena/issues)
-
 A focused platform for practicing algorithms, taking quizzes, debugging code, and forming hackathon teams — all in one Arena.
 
 ---
