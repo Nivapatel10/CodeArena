@@ -187,8 +187,9 @@
     <div class="logo">CodeArena</div>
 
     <nav class="p-3 flex-grow-1">
+      {% csrf_token %}
       <a class="nav-link-custom active">📘 Problems</a>
-      <a class="nav-link-custom">👤 Profile</a>
+      <a class="nav-link-custom" href="{% url 'profile' %}">👤 Profile</a>
       <a class="nav-link-custom">🧠 Quiz</a>
       <a class="nav-link-custom">🏆 Leaderboard</a>
       <a class="nav-link-custom">⚙️ Settings</a>
@@ -213,8 +214,8 @@
   </header>
 
   <div class="mobile-menu" id="mobileMenu">
-    <a class="nav-link-custom active">📘 Problems</a>
-    <a class="nav-link-custom">👤 Profile</a>
+    <a class="nav-link-custom active" >📘 Problems</a>
+    <a class="nav-link-custom" >👤 Profile</a>
     <a class="nav-link-custom">🧠 Quiz</a>
     <a class="nav-link-custom">🏆 Leaderboard</a>
     <a class="nav-link-custom">⚙️ Settings</a>
@@ -280,4 +281,4 @@
   </script>
 
 </body>
-</html>
+</html>e:\CodeArena\CodeArena\mysite\templates\image.png

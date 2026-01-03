@@ -1,0 +1,396 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>CodeArena</title>
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.0.2/dist/css/bootstrap.min.css" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.3/font/bootstrap-icons.min.css">
+
+    <style>
+        /* --- YOUR ORIGINAL STYLES (PRESERVED) --- */
+        .sidebar {
+            width: 215px;
+            height: 100vh;   
+            background: #111111;
+            color: white;
+            position: fixed;
+            left: 0;
+            top: 0;
+            padding: 20px;
+            z-index: 100;
+        }
+
+        .sidebar a {
+            color: white;
+            text-decoration: none;
+            display: block;
+            margin: 15px 0;
+        }
+
+        .main-content {
+            margin-left: 215px; /* Matches sidebar width */
+            padding: 20px;
+            /* calc(100vw - 240px) prevents the horizontal scrollbar by subtracting sidebar width from viewport */
+            max-width: calc(100vw - 240px); 
+        }
+
+        /* Update your existing CSS to handle the swap */
+        @media (max-width: 768px) {
+            .sidebar {
+                display: none !important;
+            }
+            .main-content {
+                margin-left: 0 !important;
+                max-width: 100% !important;
+                padding-top: 20px;
+            }
+
+            /* FIX FOR THE RANK OVERLAPPING */
+            .rank-pulse {
+                position: relative !important; /* Stop floating */
+                top: 0 !important;            /* Reset position */
+                right: 0 !important;          /* Reset position */
+                display: inline-block;        /* Sit next to text */
+                margin-bottom: 15px;          /* Add space below it */
+                margin-left: 0 !important;
+            }
+
+            .user-content {
+                justify-content: center;      /* Center the content on mobile */
+                text-align: center;
+            }
+
+            .user-content img {
+                margin-right: 0 !important;   /* Remove the 'me-5' gap on mobile */
+                margin-bottom: 20px;          /* Add space below image */
+            }
+        }
+
+        .plugin-card.futuristic {
+            --glow-gradient: linear-gradient(90deg, #00dc82, #0ff, #ff00ff);
+            --bg-dark: rgba(14, 17, 27, 0.9);
+            position: relative;
+            padding: 2rem;
+            border-radius: 1.25rem;
+            background: var(--bg-dark);
+            backdrop-filter: blur(1rem) saturate(1.4);
+            color: #fff;
+            display: flex;
+            flex-direction: column;
+            transition: transform 0.4s ease, box-shadow 0.4s ease;
+            z-index: 1;
+            height: 100%; /* Ensures cards in the same row are equal height */
+        }
+
+        .plugin-card.futuristic::before {
+            content: "";
+            position: absolute;
+            inset: 0;
+            padding: 2px;
+            border-radius: inherit;
+            background: var(--glow-gradient);
+            background-size: 300% 300%;
+            animation: borderFlow 6s linear infinite;
+            -webkit-mask: linear-gradient(#fff 0 0) content-box, linear-gradient(#fff 0 0);
+            -webkit-mask-composite: xor;
+            mask-composite: exclude;
+            z-index: -1;
+        }
+
+        @keyframes borderFlow {
+            0% { background-position: 0% 50%; }
+            50% { background-position: 100% 50%; }
+            100% { background-position: 0% 50%; }
+        }
+
+        .plugin-card.futuristic:hover {
+            transform: translateY(-5px);
+            box-shadow: 0 0 30px rgba(32, 201, 151, 0.5);
+        }
+
+        /* --- CALENDAR STYLES (PRESERVED) --- */
+        .calendar-body {
+            display: flex;
+            justify-content: flex-start;
+            gap: 10px;
+            overflow-x: auto;
+            padding: 15px 0;
+        }
+
+        .month {
+            display: grid;
+            /* repeat(7, 1fr) creates 7 equal rows for the 7 days of the week */
+            grid-template-rows: repeat(7, 1fr); 
+            grid-auto-flow: column;
+            grid-auto-columns: 10px;
+            gap: 3px;
+        }
+
+        .day { width: 10px; height: 10px; border-radius: 2px; transition: 0.12s; }
+        .day:hover { transform: scale(1.3); z-index: 10; }
+        .l0 { background: #1a1f2e; }
+        .l1 { background: #0e3a3a; }
+        .l2 { background: #137b7b; }
+        .l3 { background: #19c1c1; }
+        .l4 { background: #2fffff; }
+
+        .fontBold { font-weight: bolder; font-family: 'Segoe UI', Tahoma, sans-serif; }
+
+        /* for rank badge */
+        @keyframes pulseGlow {
+            0% { box-shadow: 0 0 5px rgba(15, 255, 255, 0.4); }
+            50% { box-shadow: 0 0 20px rgba(15, 255, 255, 0.8); }
+            100% { box-shadow: 0 0 5px rgba(15, 255, 255, 0.4); }
+        }
+
+       .rank-pulse {
+            position: absolute;
+            top: 77px;    /* Adjusted for the new padding */
+            right: 290px;  /* Adjusted for the new padding */
+            animation: pulseGlow 2s infinite ease-in-out;
+            border: none;
+            font-weight: 800;
+            padding: 10px 25px; 
+            font-size: 0.9rem;
+            text-transform: uppercase;
+            letter-spacing: 1px;
+            color: #000 !important;
+            border-radius: 50px; /* Made it more pill-shaped */
+            background-color: aqua;
+            z-index: 10;
+            transition: all 0.3s ease;
+    }
+        .rank-pulse:hover {
+            transform: scale(1.1);
+            background-color: #00dc82 !important; /* Changes color slightly on hover */
+        }
+    </style>
+</head>
+<body style="background-color: #06010f;">
+
+<div class="sidebar d-none d-md-flex flex-column">
+    <h4 class="logo text-info">CodeArena</h4>
+    <a href="{%url 'dashboard' %}">Dashboard</a>
+    <a href="#">Problems</a>
+    <a href="#">Quiz</a>
+</div>
+
+
+<nav class="navbar navbar-expand-lg navbar-dark bg-dark d-md-none border-bottom border-info">
+  <div class="container-fluid">
+    <a class="navbar-brand text-info fontBold" href="#">CodeArena</a>
+    <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbarNav">
+      <span class="navbar-toggler-icon"></span>
+    </button>
+    <div class="collapse navbar-collapse" id="navbarNav">
+      <ul class="navbar-nav ms-auto text-center">
+        <li class="nav-item"><a class="nav-link text-white" href="#">Dashboard</a></li>
+        <li class="nav-item"><a class="nav-link text-white" href="#">Problems</a></li>
+        <li class="nav-item"><a class="nav-link text-white" href="#">Quiz</a></li>
+      </ul>
+    </div>
+  </div>
+</nav>
+
+
+<div class="main-content">
+   <div class="row mb-4">
+    <div class="col-12">
+        <div class="plugin-card futuristic" style="padding: 3rem;">
+
+            <div class="user-content d-flex align-items-center flex-wrap">
+                <img src="image.png" class="rounded me-5" 
+                     style="height: 180px; width: 180px; object-fit: cover; background: #222; border: 3px solid rgba(47, 255, 255, 0.4); box-shadow: 0 0 20px rgba(47, 255, 255, 0.2);">
+                
+                <div class="py-2">
+                    <button class="rank-pulse">🏆 Rank#44</button>
+                    <h1 class="display-5 fontBold mb-3" style="color: white; letter-spacing: -1px;">John Doe</h1>
+                    
+                    <p class="h5 mb-3" style="color: gainsboro; font-weight: 300;">
+                        Passionate Coder | Problem Solver | Open Solver Enthusiast
+                    </p> 
+                    
+                    <div class="d-flex gap-4 mt-4" style="color: #aaa;">
+                        <span><i class="bi bi-envelope-at me-2 text-info"></i>johndoe@example.com</span>
+                        <span><i class="bi bi-calendar-check me-2 text-info"></i>Member since Dec 2024</span>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+    <div class="row g-4 mb-4">
+    <div class="col-6 col-lg-3">
+        <div class="plugin-card futuristic" style="padding: 1.2rem;">
+            <p class="h5 mb-2"><i class="bi bi-check-circle" style="color: greenyellow;"></i></p>
+            <p class="fw-bold text-info fs-3 mb-0">213</p>
+            <p class="text-light small opacity-75">Problems Solved</p>
+        </div>
+    </div>
+    <div class="col-6 col-lg-3">
+        <div class="plugin-card futuristic" style="padding: 1.2rem;">
+            <p class="h5 mb-2"><i class="bi bi-fire" style="color: orange;"></i></p>
+            <p class="fw-bold text-info fs-3 mb-0">7 days</p>
+            <p class="text-light small opacity-75">Current Streak</p>
+        </div>
+    </div>
+    <div class="col-6 col-lg-3">
+        <div class="plugin-card futuristic" style="padding: 1.2rem;">
+            <p class="h5 mb-2"><i class="bi bi-trophy" style="color: palegoldenrod;"></i></p>
+            <p class="fw-bold text-info fs-3 mb-0">21 days</p>
+            <p class="text-light small opacity-75">Max Streak</p>
+        </div>
+    </div>
+    <div class="col-6 col-lg-3">
+        <div class="plugin-card futuristic" style="padding: 1.2rem;">
+            <p class="h5 mb-2" style="color: plum;">＜＞</p>
+            <p class="fw-bold text-info fs-3 mb-0">324</p>
+            <p class="text-light small opacity-75">Total Submissions</p>
+        </div>
+    </div>
+</div>
+
+    <div class="row mb-2">
+        <div class="col-12">
+            <div class="plugin-card futuristic">
+                <div class="d-flex justify-content-between align-items-center mb-3">
+                    <span class="fontBold">📅 Activity Calendar</span>
+                    <div class="d-flex align-items-center gap-1" style="font-size: 10px; color: #aaa;">
+                        <span>Less</span>
+                        <div class="day l0"></div><div class="day l1"></div><div class="day l2"></div><div class="day l3"></div><div class="day l4"></div>
+                        <span>More</span>
+                    </div>
+                </div>
+                <div class="calendar-body" id="calendar"></div>
+            </div>
+        </div>
+    </div>
+
+   <div class="row g-4 mt-2">
+  <div class="col-md-6">
+      <div class="plugin-card futuristic">
+          <div class="user-content">
+              <p class="fontBold h3 mb-4" style="color: whitesmoke;"><i class="bi bi-cpu me-2 text-info"></i>Skills</p>
+              
+              <div class="mb-3">
+                <div class="d-flex justify-content-between mb-1 small text-uppercase">
+                  <span>Data Structures</span>
+                  <span class="text-info">85%</span>
+                </div>
+                <div style="height: 6px; background: rgba(255,255,255,0.1); border-radius: 10px; overflow: hidden;">
+                  <div style="width: 85%; height: 100%; background: #0ff; box-shadow: 0 0 10px #0ff;"></div>
+                </div>
+              </div>
+
+              <div class="mb-3">
+                <div class="d-flex justify-content-between mb-1 small text-uppercase">
+                  <span>Algorithms</span>
+                  <span class="text-info">70%</span>
+                </div>
+                <div style="height: 6px; background: rgba(255,255,255,0.1); border-radius: 10px; overflow: hidden;">
+                  <div style="width: 70%; height: 100%; background: #00dc82; box-shadow: 0 0 10px #00dc82;"></div>
+                </div>
+              </div>
+
+              <div class="mb-3">
+                <div class="d-flex justify-content-between mb-1 small text-uppercase">
+                  <span>System Design</span>
+                  <span class="text-info">45%</span>
+                </div>
+                <div style="height: 6px; background: rgba(255,255,255,0.1); border-radius: 10px; overflow: hidden;">
+                  <div style="width: 45%; height: 100%; background: #ff00ff; box-shadow: 0 0 10px #ff00ff;"></div>
+                </div>
+              </div>
+          </div>
+      </div>
+  </div>
+
+  <div class="col-md-6">
+      <div class="plugin-card futuristic">
+          <div class="user-content">
+              <p class="fontBold h3 mb-4" style="color: whitesmoke;"><i class="bi bi-journal-code me-2 text-info"></i>Topics Covered</p>
+              <div class="d-flex flex-wrap gap-2">
+                <style>
+                  .topic-tag {
+                    border: 1px solid rgba(47, 255, 255, 0.3);
+                    padding: 5px 15px;
+                    border-radius: 50px;
+                    font-size: 0.85rem;
+                    color: #2fffff;
+                    transition: all 0.3s ease;
+                    background: rgba(47, 255, 255, 0.05);
+                  }
+                  .topic-tag:hover {
+                    background: #2fffff;
+                    color: #000;
+                    box-shadow: 0 0 15px #2fffff;
+                    transform: scale(1.05);
+                  }
+                </style>
+                <span class="topic-tag">Arrays</span>
+                <span class="topic-tag">String</span>
+                <span class="topic-tag">Hash Table</span>
+                <span class="topic-tag">Dynamic Programming</span>
+                <span class="topic-tag">Math</span>
+                <span class="topic-tag">Sorting</span>
+                <span class="topic-tag">Greedy</span>
+                <span class="topic-tag">Binary Search</span>
+                <span class="topic-tag">Tree</span>
+                <span class="topic-tag">Graph</span>
+              </div>
+          </div>
+      </div>
+  </div>
+</div>
+
+<script>
+const calendar = document.getElementById("calendar");
+const months = ["Jan","Feb","Mar","Apr","May","Jun","Jul","Aug","Sep","Oct","Nov","Dec"];
+const currentYear = new Date().getFullYear();
+
+function getDaysInMonth(year, monthIndex) {
+  return new Date(year, monthIndex + 1, 0).getDate();
+}
+
+months.forEach((month, index) => {
+  const monthWrapper = document.createElement("div");
+  monthWrapper.style.display = "flex";
+  monthWrapper.style.flexDirection = "column";
+
+  const label = document.createElement("div");
+  label.style.fontSize = "10px";
+  label.style.color = "#aaa";
+  label.style.marginBottom = "5px";
+  label.innerText = month;
+
+  const monthGrid = document.createElement("div");
+  monthGrid.className = "month";
+
+  const daysInMonth = getDaysInMonth(currentYear, index);
+  const firstDay = new Date(currentYear, index, 1).getDay();
+
+  for (let i = 0; i < firstDay; i++) {
+    const empty = document.createElement("div");
+    empty.style.visibility = "hidden";
+    monthGrid.appendChild(empty);
+  }
+
+  for (let dayNum = 1; dayNum <= daysInMonth; dayNum++) {
+    const day = document.createElement("div");
+    const level = Math.floor(Math.random() * 5);
+    day.className = `day l${level}`;
+    day.title = `${month} ${dayNum}, ${currentYear}`;
+    monthGrid.appendChild(day);
+  }
+
+  monthWrapper.appendChild(label);
+  monthWrapper.appendChild(monthGrid);
+  calendar.appendChild(monthWrapper);
+});
+</script>
+
+<script src="https://cdn.jsdelivr.net/npm/bootstrap@5.0.2/dist/js/bootstrap.bundle.min.js"></script>
+</body>
+</html>
